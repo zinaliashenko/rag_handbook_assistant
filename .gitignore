@@ -1,0 +1,22 @@
+# Conda/venv
+.env
+__pycache__/
+*.pyc
+
+# Jupyter
+.ipynb_checkpoints
+
+# Streamlit
+.streamlit/
+
+# Data
+chunks/
+embeddings/
+data/
+faiss_index/
+*.json
+*.pkl
+plan.txt
+
+# OS-specific
+.DS_Store
