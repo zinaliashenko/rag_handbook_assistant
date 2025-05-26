@@ -43,6 +43,8 @@ def split_into_chunks(files_paths: list[str]) -> list[list]:
 
         chunks = partition_pdf(
             filename=file_path,
+            strategy="auto",  # не активує detectron2, якщо явно не потрібно
+            extract_images_in_pdf=False,  # забороняє image extraction
             chunking_strategy="by_title",
             max_characters=2500,
             combine_text_under_n_chars=500,
