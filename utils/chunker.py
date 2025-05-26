@@ -43,6 +43,14 @@ def split_into_chunks(files_paths: list[str]) -> list[list]:
 
         chunks = partition_pdf(
             filename=file_path,
+            chunking_strategy="by_title",
+            max_characters=2500,
+            combine_text_under_n_chars=500,
+            new_after_n_chars=2000,
+        )
+        """
+        chunks = partition_pdf(
+            filename=file_path,
             infer_table_structure=True, # enables the detection and extraction of tables as structured elements
             strategy="fast", # "hi_res" - deep learning framework for object detection, segmentation, and layout analysis in documents or images
             extract_image_block_types=[], # ["Image", "Table"] specifies the types of blocks to be treated as images
@@ -53,7 +61,7 @@ def split_into_chunks(files_paths: list[str]) -> list[list]:
             max_characters=2500, # sets the maximum number of characters in a chunk
             combine_text_under_n_chars=500, # combines small text fragments into a single chunk
             new_after_n_chars=2000, # creates a new chunk after reaching this character limit
-        )
+        )"""
         if not chunks:
             print(f"[WARNING] No chunks extracted from {file_path}")
         else:
