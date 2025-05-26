@@ -19,7 +19,7 @@ from .embedder import embed_chunks, embed_query
 from .retriever import index_chunks, retrieve_top_k_chunks
 from .llm_interface import chat_template_groq, client_response_groq
 from .llm_interface import print_response_console, print_response_markdown
-from .config import DATA_PATH, CHUNKS_PATH
+from .config import DATA_PATH, CHUNKS_PATH, INDEX_PATH
 
 
 def run_data_pipeline():
@@ -33,12 +33,12 @@ def run_data_pipeline():
     """
     print("[INFO] Start data pipeline.")
 
-    # Ensure required directories exist
     os.makedirs(DATA_PATH, exist_ok=True)
     os.makedirs(os.path.dirname(CHUNKS_PATH), exist_ok=True)
 
     # Files search
-    data_dir = os.path.join(os.getcwd(), DATA_PATH)
+    data_dir = DATA_PATH
+    print(f"Data directory: {data_dir}")
 
     allowed_ext = (".pdf", ".docx", ".txt")
     files_paths = [
@@ -64,6 +64,9 @@ def run_data_pipeline():
     # retriever.py
     print("[INFO] Indexing embeddings with FAISS...")
     index_chunks()
+    print(f"Пробуємо знайти індекс за шляхом: {INDEX_PATH}")
+    print(f"Файли в папці chunks/: {os.listdir(os.path.dirname(INDEX_PATH)) if os.path.exists(os.path.dirname(INDEX_PATH)) else 'папка відсутня'}")
+    print(f"Файли в data/: {os.listdir('data') if os.path.exists('data') else 'папка відсутня'}")
 
 
 def run_query_answer_pipeline(query: str = None,

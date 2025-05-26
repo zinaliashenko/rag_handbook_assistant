@@ -12,6 +12,7 @@ Project: RAG Handbook Assistant
 import streamlit as st
 import os
 from utils.pipeline import run_data_pipeline, run_query_answer_pipeline
+from utils.config import DATA_PATH
 
 # Application title
 st.title("🧠 RAG Handbook Assistant")
@@ -22,8 +23,6 @@ uploaded_files = st.file_uploader(
     type=["pdf", "docx", "txt"], 
     accept_multiple_files=True
 )
-
-DATA_PATH = "data"
 
 if uploaded_files:
     # Save loaded files to data/ folder
