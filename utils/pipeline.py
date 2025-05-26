@@ -19,19 +19,24 @@ from .embedder import embed_chunks, embed_query
 from .retriever import index_chunks, retrieve_top_k_chunks
 from .llm_interface import chat_template_groq, client_response_groq
 from .llm_interface import print_response_console, print_response_markdown
-from .config import DATA_PATH
+from .config import DATA_PATH, CHUNKS_PATH
 
 
 def run_data_pipeline():
     """
     Full data processing pipeline:
+    - creates necessary folders if missing;
     - finds all files in DATA_PATH with supported extensions (.pdf, .docx, .txt);
     - splits documents into chunks;
     - creates embeddings for chunks;
     - indexes embeddings with FAISS.
     """
     print("[INFO] Start data pipeline.")
-    
+
+    # Ensure required directories exist
+    os.makedirs(DATA_PATH, exist_ok=True)
+    os.makedirs(os.path.dirname(CHUNKS_PATH), exist_ok=True)
+
     # Files search
     data_dir = os.path.join(os.getcwd(), DATA_PATH)
 
