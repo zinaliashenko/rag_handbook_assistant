@@ -1,3 +1,4 @@
+import os
 # === LLM ===
 
 def get_groq_api_key():
@@ -20,9 +21,11 @@ LLM_GROQ = {
 }
 
 # === PATHS ===
-CHUNKS_PATH = "chunks/chunks_and_statistics.json"
-INDEX_PATH = "chunks/faiss.index"
-DATA_PATH = "data"
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+CHUNKS_PATH = os.path.join(BASE_DIR, "chunks", "chunks_and_statistics.json")
+INDEX_PATH = os.path.join(BASE_DIR, "chunks", "faiss.index")
+DATA_PATH = os.path.join(BASE_DIR, "data")
 
 # === MODELS ===
 TOKENIZER_MODEL = "sentence-transformers/all-MiniLM-L6-v2"

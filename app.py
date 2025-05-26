@@ -27,6 +27,7 @@ DATA_PATH = "data"
 
 if uploaded_files:
     # Save loaded files to data/ folder
+    os.makedirs(DATA_PATH, exist_ok=True)
     for uploaded_file in uploaded_files:
         file_path = os.path.join(DATA_PATH, uploaded_file.name)
         with open(file_path, "wb") as f:
