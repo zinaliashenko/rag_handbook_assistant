@@ -41,6 +41,8 @@ def split_into_chunks(files_paths: list[str]) -> list[list[dict]]:
     Splits PDFs into chunks per page (or optionally using headers).
     Returns a list of list of dicts per file.
     """
+    download_punkt_if_needed()
+    
     all_chunks = []
 
     for file_path in files_paths:
@@ -87,8 +89,6 @@ def save_chunks_and_stats(all_chunks: list[list], path_to_save: str = CHUNKS_PAT
     """
     Saves chunks and their statistics to JSON file.
     """
-    download_punkt_if_needed()
-
     flat_chunks = [chunk for doc_chunks in all_chunks for chunk in doc_chunks]
 
     start_time = timer()
