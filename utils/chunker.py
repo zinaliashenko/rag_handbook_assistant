@@ -48,6 +48,7 @@ def split_into_chunks(files_paths: list[str]) -> list[list]:
             extract_image_block_types=[], # ["Image", "Table"] specifies the types of blocks to be treated as images
             #extract_image_block_to_payload=True, # converts extracted images to a base64-encoded format
             #use_ocr=,
+            ocr_strategy="no_ocr",
             chunking_strategy="by_title", # controls how the document is split into chunks for processing
             max_characters=2500, # sets the maximum number of characters in a chunk
             combine_text_under_n_chars=500, # combines small text fragments into a single chunk
