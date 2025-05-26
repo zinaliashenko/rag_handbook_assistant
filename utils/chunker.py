@@ -42,7 +42,7 @@ def split_into_chunks(files_paths: list[str]) -> list[list[dict]]:
     Returns a list of list of dicts per file.
     """
     download_punkt_if_needed()
-    
+
     all_chunks = []
 
     for file_path in files_paths:
@@ -60,15 +60,12 @@ def split_into_chunks(files_paths: list[str]) -> list[list[dict]]:
 
             doc_chunks.append({
                 "file_directory": str(file_path).rsplit("/", 1)[0],
-                "file_name": str(file_path).rsplit("/", 1)[-1],
                 "file_type": "pdf",
                 "page_number": i + 1,
                 "page_char_count": len(text),
                 "page_word_count": len(re.findall(r'\w+', cleaned_text)),
-                "page_sentence_count_raw": len(nltk.sent_tokenize(cleaned_text)),
+                "page_sentence_count_raw": len(text.split(". ")),
                 "page_token_count": len(tokenizer(cleaned_text)["input_ids"]),
-                "origin_elements": ["Text"],
-                "title": title,
                 "contains_text": True,
                 "text": cleaned_text,
             })
