@@ -1,30 +1,25 @@
 """
-A module for splitting PDF documents into text chunks and saving statistics.
+A module for splitting PDF documents into text chunks and saving statistics using PyMuPDF.
 
 Functions:
-- split_into_chunks(files_paths): splits documents into chunks by pages.
-- save_chunks_and_stats(all_chunks): saves chunks with metadata (file, page, tokens, words, sentences, etc.) in JSON.
+- split_into_chunks(files_paths): splits PDF pages into text chunks.
+- save_chunks_and_stats(all_chunks): saves chunks with metadata in JSON.
 
-Uses `fitz` (PyMuPDF), `nltk` and Hugging Face `tokenizer`.
+Uses PyMuPDF, NLTK, and Hugging Face tokenizer.
 """
 
 import fitz  # PyMuPDF
-from time import perf_counter as timer
 import re
 import nltk
-from transformers import AutoTokenizer
 import json
-import os
-
+from transformers import AutoTokenizer
+from time import perf_counter as timer
 from .config import TOKENIZER_MODEL, CHUNKS_PATH
 
 tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_MODEL)
 
 
 def download_punkt_if_needed():
-    """
-    Downloads NLTK 'punkt' tokenizer if needed.
-    """
     try:
         nltk.data.find('tokenizers/punkt')
     except LookupError:
@@ -32,104 +27,72 @@ def download_punkt_if_needed():
         nltk.download('punkt')
 
 
-def split_into_chunks(files_paths: list[str]) -> list[list]:
+def text_formatter(text: str) -> str:
+    return text.replace("\n", " ").strip()
+
+
+def is_valid_title(text: str) -> str:
+    title = text.strip().split("\n")[0]
+    return title if len(title) >= 5 else "Untitled"
+
+
+def split_into_chunks(files_paths: list[str]) -> list[list[dict]]:
     """
-    Splits PDF files into chunks by page.
-    Each page is treated as one chunk.
+    Splits PDFs into chunks per page (or optionally using headers).
+    Returns a list of list of dicts per file.
     """
     all_chunks = []
+
     for file_path in files_paths:
         start_time = timer()
-
-        if not os.path.exists(file_path):
-            print(f"[WARNING] File not found: {file_path}")
-            continue
+        doc_chunks = []
 
         doc = fitz.open(file_path)
-        chunks = []
-        for page_num, page in enumerate(doc, start=1):
+        for i, page in enumerate(doc):
             text = page.get_text()
             if not text.strip():
-                continue  # skip empty pages
+                continue
 
-            chunks.append({
-                "file_directory": os.path.dirname(file_path),
-                "file_name": os.path.basename(file_path),
-                "file_type": "application/pdf",
-                "page_number": page_num,
-                "text": text
+            cleaned_text = text_formatter(text)
+            title = is_valid_title(cleaned_text)
+
+            doc_chunks.append({
+                "file_directory": str(file_path).rsplit("/", 1)[0],
+                "file_name": str(file_path).rsplit("/", 1)[-1],
+                "file_type": "pdf",
+                "page_number": i + 1,
+                "page_char_count": len(text),
+                "page_word_count": len(re.findall(r'\w+', cleaned_text)),
+                "page_sentence_count_raw": len(nltk.sent_tokenize(cleaned_text)),
+                "page_token_count": len(tokenizer(cleaned_text)["input_ids"]),
+                "origin_elements": ["Text"],
+                "title": title,
+                "contains_text": True,
+                "text": cleaned_text,
             })
 
-        if not chunks:
-            print(f"[WARNING] No text chunks extracted from {file_path}")
-        else:
-            all_chunks.append(chunks)
-
+        all_chunks.append(doc_chunks)
         end_time = timer()
-        print(f"[INFO] Processed '{file_path}' in {end_time - start_time:.2f} seconds.")
+        print(f"[INFO] Parsed '{file_path}' in {end_time - start_time:.3f} seconds")
 
     return all_chunks
 
 
-def text_formatter(text: str) -> str:
-    """
-    Performs minor formatting on text.
-    """
-    cleaned_text = text.replace("\n", " ").strip()
-    return cleaned_text
-
-
-def is_valid_title(title: str) -> str:
-    """
-    Set "Untitled" title for too short titles.
-    """
-    if not title or len(title.strip()) < 5:
-        return "Untitled"
-    return title
-
-
 def save_to_json(data, path):
-    """
-    Saves data to a chosen folder.
-    """
-    with open(path, "w", encoding="utf-8") as file:
-        json.dump(data, file, ensure_ascii=False, indent=2)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
 
 
-def save_chunks_and_stats(all_chunks: list[list], 
-                          tokenizer: AutoTokenizer=tokenizer,
-                          path_to_save: str=CHUNKS_PATH) -> None:
+def save_chunks_and_stats(all_chunks: list[list], path_to_save: str = CHUNKS_PATH):
     """
-    Saves chunks and their statistics to a file.
+    Saves chunks and their statistics to JSON file.
     """
     download_punkt_if_needed()
 
-    chunks_and_statistics = []
+    flat_chunks = [chunk for doc_chunks in all_chunks for chunk in doc_chunks]
+
     start_time = timer()
-
-    for chunks in all_chunks:
-        for chunk in chunks:
-            cleaned_text = text_formatter(chunk["text"])
-
-            chunks_and_statistics.append({
-                "file_directory": chunk["file_directory"],
-                "file_name": chunk["file_name"],
-                "file_type": chunk["file_type"],
-                "page_number": chunk["page_number"],
-                "page_char_count": len(chunk["text"]),
-                "page_word_count": len(re.findall(r'\\w+', cleaned_text)),
-                "page_sentence_count_raw": len(nltk.sent_tokenize(cleaned_text)),
-                "page_token_count": len(tokenizer(cleaned_text)["input_ids"]),
-                "origin_elements": ["PageText"],
-                "title": f"Page {chunk['page_number']}",
-                "contains_text": True,
-                "text": cleaned_text
-            })
-
+    save_to_json(flat_chunks, path_to_save)
     end_time = timer()
-    print(f"[INFO] Statistics generated in {end_time - start_time:.2f} seconds.")
 
-    save_to_json(data=chunks_and_statistics, 
-                 path=path_to_save)
-
-    print(f"[INFO] Chunks and statistics were saved.")
+    print(f"[INFO] Saved {len(flat_chunks)} chunks in {end_time - start_time:.2f} seconds.")
