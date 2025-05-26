@@ -2,19 +2,19 @@
 A module for splitting PDF documents into text chunks and saving statistics.
 
 Functions:
-- split_into_chunks(files_paths): splits documents into chunks by headers.
+- split_into_chunks(files_paths): splits documents into chunks by pages.
 - save_chunks_and_stats(all_chunks): saves chunks with metadata (file, page, tokens, words, sentences, etc.) in JSON.
 
-Uses `unstructured`, `nltk` and Hugging Face `tokenizer`.
+Uses `fitz` (PyMuPDF), `nltk` and Hugging Face `tokenizer`.
 """
 
-from unstructured.partition.pdf import partition_pdf
+import fitz  # PyMuPDF
 from time import perf_counter as timer
-from unstructured.documents.elements import NarrativeText, Title, Table
 import re
 import nltk
 from transformers import AutoTokenizer
 import json
+import os
 
 from .config import TOKENIZER_MODEL, CHUNKS_PATH
 
@@ -23,7 +23,7 @@ tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_MODEL)
 
 def download_punkt_if_needed():
     """
-    Downloades NLTR 'punkt'.
+    Downloads NLTK 'punkt' tokenizer if needed.
     """
     try:
         nltk.data.find('tokenizers/punkt')
@@ -34,43 +34,40 @@ def download_punkt_if_needed():
 
 def split_into_chunks(files_paths: list[str]) -> list[list]:
     """
-    Splits PDF files into chunks.
+    Splits PDF files into chunks by page.
+    Each page is treated as one chunk.
     """
-
     all_chunks = []
     for file_path in files_paths:
         start_time = timer()
 
-        chunks = partition_pdf(
-            filename=file_path,
-            strategy="auto",  # не активує detectron2, якщо явно не потрібно
-            extract_images_in_pdf=False,  # забороняє image extraction
-            chunking_strategy="by_title",
-            max_characters=2500,
-            combine_text_under_n_chars=500,
-            new_after_n_chars=2000,
-        )
-        """
-        chunks = partition_pdf(
-            filename=file_path,
-            infer_table_structure=True, # enables the detection and extraction of tables as structured elements
-            strategy="fast", # "hi_res" - deep learning framework for object detection, segmentation, and layout analysis in documents or images
-            extract_image_block_types=[], # ["Image", "Table"] specifies the types of blocks to be treated as images
-            #extract_image_block_to_payload=True, # converts extracted images to a base64-encoded format
-            use_ocr=False,
-            ocr_strategy="no_ocr",
-            chunking_strategy="by_title", # controls how the document is split into chunks for processing
-            max_characters=2500, # sets the maximum number of characters in a chunk
-            combine_text_under_n_chars=500, # combines small text fragments into a single chunk
-            new_after_n_chars=2000, # creates a new chunk after reaching this character limit
-        )"""
+        if not os.path.exists(file_path):
+            print(f"[WARNING] File not found: {file_path}")
+            continue
+
+        doc = fitz.open(file_path)
+        chunks = []
+        for page_num, page in enumerate(doc, start=1):
+            text = page.get_text()
+            if not text.strip():
+                continue  # skip empty pages
+
+            chunks.append({
+                "file_directory": os.path.dirname(file_path),
+                "file_name": os.path.basename(file_path),
+                "file_type": "application/pdf",
+                "page_number": page_num,
+                "text": text
+            })
+
         if not chunks:
-            print(f"[WARNING] No chunks extracted from {file_path}")
+            print(f"[WARNING] No text chunks extracted from {file_path}")
         else:
             all_chunks.append(chunks)
+
         end_time = timer()
-        print(f"[INFO] Time: {end_time-start_time:.5f} seconds.")
-    
+        print(f"[INFO] Processed '{file_path}' in {end_time - start_time:.2f} seconds.")
+
     return all_chunks
 
 
@@ -106,44 +103,33 @@ def save_chunks_and_stats(all_chunks: list[list],
     Saves chunks and their statistics to a file.
     """
     download_punkt_if_needed()
-    
+
     chunks_and_statistics = []
     start_time = timer()
 
     for chunks in all_chunks:
         for chunk in chunks:
-
-            if not hasattr(chunk, "metadata") or chunk.metadata is None:
-                continue
-
-            elements = chunk.metadata.orig_elements
-            element_types = list({el.category for el in elements})
-
-            text_parts = [
-                el.text for el in elements if isinstance(el, (NarrativeText, Title, Table))
-            ]
-            full_text = "\n".join(text_parts)
-            cleaned_text = text_formatter(text=full_text)
+            cleaned_text = text_formatter(chunk["text"])
 
             chunks_and_statistics.append({
-                "file_directory": chunk.metadata.file_directory,
-                "file_name": chunk.metadata.filename,
-                "file_type": chunk.metadata.filetype,
-                "page_number": getattr(chunk.metadata, "page_number", -1),
-                "page_char_count": len(chunk.text),
-                "page_word_count": len(re.findall(r'\w+', cleaned_text)),
+                "file_directory": chunk["file_directory"],
+                "file_name": chunk["file_name"],
+                "file_type": chunk["file_type"],
+                "page_number": chunk["page_number"],
+                "page_char_count": len(chunk["text"]),
+                "page_word_count": len(re.findall(r'\\w+', cleaned_text)),
                 "page_sentence_count_raw": len(nltk.sent_tokenize(cleaned_text)),
                 "page_token_count": len(tokenizer(cleaned_text)["input_ids"]),
-                "origin_elements": element_types,
-                "title": is_valid_title(next((el.text for el in elements if isinstance(el, Title)), None)),
-                "contains_text": any(isinstance(el, (NarrativeText, Title, Table)) for el in elements),
+                "origin_elements": ["PageText"],
+                "title": f"Page {chunk['page_number']}",
+                "contains_text": True,
                 "text": cleaned_text
             })
 
     end_time = timer()
-    print(f"[INFO] Time: {end_time-start_time:.5f} seconds.")
+    print(f"[INFO] Statistics generated in {end_time - start_time:.2f} seconds.")
 
     save_to_json(data=chunks_and_statistics, 
                  path=path_to_save)
-    
+
     print(f"[INFO] Chunks and statistics were saved.")
