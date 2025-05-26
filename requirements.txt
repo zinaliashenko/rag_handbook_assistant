@@ -1,4 +1,4 @@
-﻿faiss-cpu==1.11.0
+faiss-cpu==1.11.0
 huggingface-hub==0.31.4
 nltk==3.9.1
 numpy==2.2.6
