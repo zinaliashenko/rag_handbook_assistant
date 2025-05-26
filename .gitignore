@@ -1,5 +1,6 @@
 # Conda/venv
 .env
+
 __pycache__/
 *.pyc
 
@@ -10,10 +11,7 @@ __pycache__/
 .streamlit/
 
 # Data
-chunks/
-embeddings/
-data/
-faiss_index/
+data_full/
 *.json
 *.pkl
 plan.txt
