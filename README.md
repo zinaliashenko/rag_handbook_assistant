@@ -14,7 +14,7 @@ An interactive Retrieval-Augmented Generation (RAG)-based answer retrieval syste
 
 
 ## 🗂️ Project structure
-
+```
 rag_handbook_assistant/
 ├── app.py # Streamlit interface
 ├── run_pipeline.py # Launch via console
@@ -30,7 +30,7 @@ rag_handbook_assistant/
 ├── .env # API key for Groq (local)
 └── .streamlit/
 └── secrets.toml # API key for Groq (in Streamlit Cloud)
-
+```
 
 ## ⚙️ Installation
 
@@ -85,7 +85,7 @@ The system will return an answer based on the most relevant chunks from the docu
 
 All features can be set via requirements.txt.
 
-🔗 Links
+## 🔗 Links:
 - 💻 GitHub: https://github.com/zinaliashenko/rag_handbook_assistant
 
 - 🌍 Demo: https://rag-handbook.streamlit.app/
