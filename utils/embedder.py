@@ -7,18 +7,22 @@ Functions:
 
 Uses SentenceTransformer.
 """
+
 import json
+
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
-from .config import EMBEDDING_MODEL, CHUNKS_PATH
 from .chunker import save_to_json
-
+from .config import CHUNKS_PATH, EMBEDDING_MODEL
 
 embedding_model = SentenceTransformer(EMBEDDING_MODEL)
 
-def embed_chunks(path_to_save: str=CHUNKS_PATH,
-                 embedding_model: SentenceTransformer=embedding_model) -> None:
+
+def embed_chunks(
+    path_to_save: str = CHUNKS_PATH,
+    embedding_model: SentenceTransformer = embedding_model,
+) -> None:
     """
     Loads chunks from JSON, builds embeddings for each of them, and saves back to a file.
     """
@@ -32,9 +36,9 @@ def embed_chunks(path_to_save: str=CHUNKS_PATH,
     chunks_texts = [chunk["text"] for chunk in chunks_and_statistics]
 
     # Create embeddings in batches with a progress bar
-    embeddings = embedding_model.encode(chunks_texts, 
-                                        batch_size=32, 
-                                        show_progress_bar=True).astype("float32")
+    embeddings = embedding_model.encode(
+        chunks_texts, batch_size=32, show_progress_bar=True
+    ).astype("float32")
     print(f"[INFO] Chunks are embedded.")
 
     # Add embeddings to the chunk structure
@@ -42,14 +46,14 @@ def embed_chunks(path_to_save: str=CHUNKS_PATH,
         chunk["embedding"] = embedding.tolist()
 
     # Save updated chunks with embeddings
-    save_to_json(data=chunks_and_statistics, 
-                 path=path_to_save)
-    
+    save_to_json(data=chunks_and_statistics, path=path_to_save)
+
     print(f"[INFO] Embeddins were saved.")
 
 
-def embed_query(query: str,
-                embedding_model: SentenceTransformer=embedding_model) -> np.ndarray:
+def embed_query(
+    query: str, embedding_model: SentenceTransformer = embedding_model
+) -> np.ndarray:
     """
     Returns the embedding for a single query in NumPy array format.
     """
