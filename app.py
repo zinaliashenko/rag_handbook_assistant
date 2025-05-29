@@ -9,19 +9,21 @@ Author: zinaliashenko
 Project: RAG Handbook Assistant
 """
 
-import streamlit as st
 import os
-from utils.pipeline import run_data_pipeline, run_query_answer_pipeline
+
+import streamlit as st
+
 from utils.config import DATA_PATH
+from utils.pipeline import run_data_pipeline, run_query_answer_pipeline
 
 # Application title
 st.title("🧠 RAG Handbook Assistant")
 
 # Upload files section
 uploaded_files = st.file_uploader(
-    "📂 Load files (.pdf, .docx, .txt)", 
-    type=["pdf", "docx", "txt"], 
-    accept_multiple_files=True
+    "📂 Load files (.pdf, .docx, .txt)",
+    type=["pdf", "docx", "txt"],
+    accept_multiple_files=True,
 )
 
 if uploaded_files:
@@ -45,7 +47,6 @@ query = st.text_input("🔍 Enter a question:")
 # Query processing and getting answer
 if query:
     with st.spinner("Looking for an answer..."):
-        run_query_answer_pipeline(query=query, 
-                                  run_mode="streamlit",
-                                  llm_provider="groq")
-        
+        run_query_answer_pipeline(
+            query=query, run_mode="streamlit", llm_provider="groq"
+        )
