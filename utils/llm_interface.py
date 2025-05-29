@@ -8,16 +8,17 @@ Functions:
 - print_response_console: outputs the LLM response in console mode.
 """
 
-from openai import OpenAI
 import json
+
 import streamlit as st
+from openai import OpenAI
 
 from .config import BASE_PROMPT, CHUNKS_PATH, DIALOGUE_INSTRUCTION, LLM_GROQ, QUERY
 
 
-def chat_template_groq(indices: list[int],
-                       query: str = QUERY,
-                       base_prompt: str = BASE_PROMPT) -> list[dict]:
+def chat_template_groq(
+    indices: list[int], query: str = QUERY, base_prompt: str = BASE_PROMPT
+) -> list[dict]:
     """
     Creates a dialog template in OpenAI chat format.
 
@@ -41,20 +42,16 @@ def chat_template_groq(indices: list[int],
     full_prompt = base_prompt.format(context=context, query=query)
 
     # Form a dialogue template
-    dialogue_template = [
-        DIALOGUE_INSTRUCTION,
-        {
-            "role": "user",
-            "content": full_prompt
-        }
-    ]
+    dialogue_template = [DIALOGUE_INSTRUCTION, {"role": "user", "content": full_prompt}]
     return dialogue_template
 
 
-def client_response_groq(dialogue_template: list[dict],
-                         base_url: str=LLM_GROQ["base_url"],
-                         api_key: str=LLM_GROQ["api_key"],
-                         model=LLM_GROQ["model"]) -> str:
+def client_response_groq(
+    dialogue_template: list[dict],
+    base_url: str = LLM_GROQ["base_url"],
+    api_key: str = LLM_GROQ["api_key"],
+    model=LLM_GROQ["model"],
+) -> str:
     """
     Makes a request to LLM via the GROQ API with a dialogue.
 
@@ -70,17 +67,11 @@ def client_response_groq(dialogue_template: list[dict],
     if not api_key:
         raise ValueError("API key is required for InferenceClient.")
 
-    client = OpenAI(
-        api_key=api_key,
-        base_url=base_url
-    )
+    client = OpenAI(api_key=api_key, base_url=base_url)
 
-    response = client.chat.completions.create(
-        model=model,
-        messages=dialogue_template
-    )
+    response = client.chat.completions.create(model=model, messages=dialogue_template)
     response_text = response.choices[0].message.content
-    
+
     return response_text
 
 

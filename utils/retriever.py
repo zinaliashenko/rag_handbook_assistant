@@ -7,15 +7,15 @@ Functions for indexing and finding the nearest chunks by embeddings.
 The indices are used to retrieve the corresponding chunks in chunks_and_statistics.
 """
 
-import numpy as np
-import faiss
 import json
+
+import faiss
+import numpy as np
 
 from .config import CHUNKS_PATH, INDEX_PATH, TOP_K
 
 
-def index_chunks(path_to_save: str=CHUNKS_PATH,
-                 faiss_path: str=INDEX_PATH) -> None:
+def index_chunks(path_to_save: str = CHUNKS_PATH, faiss_path: str = INDEX_PATH) -> None:
     """
     Indexes embeddings from the chunks_and_statistics.json file in FAISS and stores the index.
     """
@@ -25,7 +25,9 @@ def index_chunks(path_to_save: str=CHUNKS_PATH,
     print(f"[INFO] Chunks are loaded.")
 
     # Get embeddings in numpy array
-    embedding_array = np.array([chunk["embedding"] for chunk in chunks_and_statistics], dtype="float32")
+    embedding_array = np.array(
+        [chunk["embedding"] for chunk in chunks_and_statistics], dtype="float32"
+    )
     print(f"INFO Embedding shape: {embedding_array.shape}")
 
     # Create indices for embeddings
@@ -39,9 +41,9 @@ def index_chunks(path_to_save: str=CHUNKS_PATH,
     print(f"[INFO] Indices were saved.")
 
 
-def retrieve_top_k_chunks(query_embedding: np.ndarray,
-                          k: int=TOP_K,
-                          faiss_path: str=INDEX_PATH) -> list[int]:
+def retrieve_top_k_chunks(
+    query_embedding: np.ndarray, k: int = TOP_K, faiss_path: str = INDEX_PATH
+) -> list[int]:
     """
     Returns the top-k indices of the closest chunks for the given query embedding.
     """
@@ -65,6 +67,6 @@ def retrieve_top_k_chunks(query_embedding: np.ndarray,
     for dist, idx in zip(distances[0], indices[0]):
         print(f"[INFO] Index: {idx}, Distance: {dist}")
         print(chunks_texts[idx])
-        print('---')
+        print("---")
 
     return indices[0].tolist()

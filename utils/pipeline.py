@@ -14,12 +14,16 @@ import os
 from pathlib import Path
 from time import perf_counter as timer
 
-from .chunker import split_into_chunks, save_chunks_and_stats
+from .chunker import save_chunks_and_stats, split_into_chunks
+from .config import CHUNKS_PATH, DATA_PATH, INDEX_PATH
 from .embedder import embed_chunks, embed_query
+from .llm_interface import (
+    chat_template_groq,
+    client_response_groq,
+    print_response_console,
+    print_response_markdown,
+)
 from .retriever import index_chunks, retrieve_top_k_chunks
-from .llm_interface import chat_template_groq, client_response_groq
-from .llm_interface import print_response_console, print_response_markdown
-from .config import DATA_PATH, CHUNKS_PATH, INDEX_PATH
 
 
 def run_data_pipeline():
@@ -65,13 +69,17 @@ def run_data_pipeline():
     print("[INFO] Indexing embeddings with FAISS...")
     index_chunks()
     print(f"Пробуємо знайти індекс за шляхом: {INDEX_PATH}")
-    print(f"Файли в папці chunks/: {os.listdir(os.path.dirname(INDEX_PATH)) if os.path.exists(os.path.dirname(INDEX_PATH)) else 'папка відсутня'}")
-    print(f"Файли в data/: {os.listdir('data') if os.path.exists('data') else 'папка відсутня'}")
+    print(
+        f"Файли в папці chunks/: {os.listdir(os.path.dirname(INDEX_PATH)) if os.path.exists(os.path.dirname(INDEX_PATH)) else 'папка відсутня'}"
+    )
+    print(
+        f"Файли в data/: {os.listdir('data') if os.path.exists('data') else 'папка відсутня'}"
+    )
 
 
-def run_query_answer_pipeline(query: str = None,
-                              run_mode="console", 
-                              llm_provider="groq"):
+def run_query_answer_pipeline(
+    query: str = None, run_mode="console", llm_provider="groq"
+):
     """
     Pipeline for responding to user request:
     - creates embedding for request;
@@ -89,6 +97,7 @@ def run_query_answer_pipeline(query: str = None,
     #  Query
     if query is None:
         from .config import QUERY
+
         query = QUERY
 
     # embedder.py
@@ -114,4 +123,3 @@ def run_query_answer_pipeline(query: str = None,
         print_response_markdown(response_text)
     else:
         print_response_console(response_text)
-
