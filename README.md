@@ -1,6 +1,6 @@
 # 🧠 RAG Reference Assistant
 
-An interactive Retrieval-Augmented Generation (RAG)-based answer retrieval system for technical documentation. The project allows you to upload PDF files, split them into chunks, create vector embeddings, and get answers to queries using Large Language Models (LLM).
+A modular Retrieval-Augmented Generation (RAG) system designed to answer questions based on uploaded PDF documentation. It processes documents into searchable chunks, creates vector embeddings, and uses a Large Language Model (LLM) to generate accurate answers.
 
 ## 🚀 Features
 
