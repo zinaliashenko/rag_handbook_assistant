@@ -16,20 +16,20 @@ A modular Retrieval-Augmented Generation (RAG) system designed to answer questio
 ## 🗂️ Project structure
 ```
 rag_handbook_assistant/
-├── app.py # Streamlit interface
-├── run_pipeline.py # Launch via console
-├── data/ # PDF files are uploaded here
-├── chunks/ # Save chunks and embeddings
-├── utils/ # Main logic
-│ ├── chunker.py # Chunking
-│ ├── embedder.py # Embeddings for chunks and queries
-│ ├── retriever.py # Finding similar chunks via FAISS
+├── app.py             # Streamlit interface
+├── run_pipeline.py    # Launch via console
+├── data/              # PDF files are uploaded here
+├── chunks/            # Save chunks and embeddings
+├── utils/             # Main logic
+│ ├── chunker.py       # Chunking
+│ ├── embedder.py      # Embeddings for chunks and queries
+│ ├── retriever.py     # Finding similar chunks via FAISS
 │ ├── llm_interface.py # Calling LLM
-│ ├── pipeline.py # Universal pipeline file( called from CLI or Streamlit)
-│ └── config.py # Constants (paths, base prompt, etc.)
-├── .env # API key for Groq (local)
+│ ├── pipeline.py      # Universal pipeline file( called from CLI or Streamlit)
+│ └── config.py        # Constants (paths, base prompt, etc.)
+├── .env               # API key for Groq (local)
 └── .streamlit/
-└── secrets.toml # API key for Groq (in Streamlit Cloud)
+└── secrets.toml       # API key for Groq (in Streamlit Cloud)
 ```
 
 ## ⚙️ Installation
