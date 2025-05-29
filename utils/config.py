@@ -2,23 +2,26 @@ import os
 
 # === LLM ===
 
+
 def get_groq_api_key():
     """
     Returnes GROQ API key from Streamlit secrets or .env.
     """
     try:
         import streamlit as st
+
         return st.secrets["GROQ_API_KEY"]
     except Exception:
         from dotenv import load_dotenv
-        import os
+        
         load_dotenv()
         return os.getenv("GROQ_API_KEY")
+
 
 LLM_GROQ = {
     "model": "meta-llama/llama-4-scout-17b-16e-instruct",
     "base_url": "https://api.groq.com/openai/v1",
-    "api_key": get_groq_api_key()
+    "api_key": get_groq_api_key(),
 }
 
 # === PATHS ===
@@ -65,8 +68,8 @@ BASE_PROMPT = """You are an AI assistant that helps employees understand interna
     Answer:"""
 
 DIALOGUE_INSTRUCTION = {
-            "role": "system",
-            "content": """You are an AI assistant that helps employees understand internal policies.
+    "role": "system",
+    "content": """You are an AI assistant that helps employees understand internal policies.
 
     When answering, always follow **this strict JSON format**:
 
@@ -77,8 +80,8 @@ DIALOGUE_INSTRUCTION = {
 
     Only fill in the fields. Do not include any text outside this format.
     If you don't know the answer, write that in the 'answer' field only.
-    """
-        }
+    """,
+}
 
 
 QUERY = "What are typical working hours?"
